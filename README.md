@@ -16,4 +16,4 @@
 
 ## Материалы к лекциям
 
-TBA
+* [Verilog](./verilog/README.md)
