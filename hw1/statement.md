@@ -62,6 +62,10 @@
 
 Ваше решение должно собираться при помощи `iverilog -g2001 ternary_logic.v`.
 
+## Тесты
+
+Чтобы протестировать ваше решение: `iverilog -g2001 ternary_logic_tester.v && ./a.out`
+
 ## Формат сдачи
 
 Необходимо отправить решение в [гугл-форму](https://docs.google.com/forms/d/e/1FAIpQLScWacdnnJ8YP1rLb6c8Jx11pD7FA8DV7ePeqg5FZWs0yK4wkQ/viewform?usp=sf_link).
