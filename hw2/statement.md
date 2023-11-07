@@ -72,7 +72,7 @@ vvp a.out
 
 ## Формат сдачи
 
-Необходимо отправить решение в _TBA_.
+Необходимо отправить решение в [гугл-форму](https://docs.google.com/forms/d/e/1FAIpQLSezAyz-EW8wUNg8M9QSizX08Xtl8JSq6ZCF5HsNjXiCbjkbMg/viewform?usp=sf_link).
 
 Для решения части необходимо использовать шаблон [`templates.v`](./templates.v), файл с Вашим решением должен называться
 `templates.v`. Изменять имена и сигнатуру модулей (количество, порядок и названия портов) запрещено.
