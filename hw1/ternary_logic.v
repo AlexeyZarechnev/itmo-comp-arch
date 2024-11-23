@@ -1,3 +1,4 @@
+// 20 transistors
 module ternary_min(a, b, out);
   input [1:0] a;
   input [1:0] b;
@@ -15,6 +16,7 @@ module ternary_min(a, b, out);
 
 endmodule
 
+// 20 transistors
 module ternary_max(a, b, out);
   input [1:0] a;
   input [1:0] b;
@@ -31,6 +33,8 @@ module ternary_max(a, b, out);
   xor_gate lsb(out[1], res, out[0]);
 endmodule
 
+
+// 30 transistors
 module ternary_any(a, b, out);
   input [1:0] a;
   input [1:0] b;
@@ -52,6 +56,8 @@ module ternary_any(a, b, out);
 
 endmodule
 
+
+// 24 transistors
 module ternary_consensus(a, b, out);
   input [1:0] a;
   input [1:0] b;
@@ -72,6 +78,7 @@ endmodule
 
 // Primitives
 
+// 4 transistors
 module nand_gate(a, b, out);
   input wire a, b;
   output out;
@@ -88,6 +95,7 @@ module nand_gate(a, b, out);
   nmos nmos2(out, nmos1_out, a);
 endmodule
 
+// 4 transistors
 module and_gate(a, b, out);
   input wire a, b;
   output out;
@@ -105,6 +113,7 @@ module and_gate(a, b, out);
 
 endmodule
 
+// 4 transistors
 module nor_gate(a, b, out);
   input wire a, b;
   output out;
@@ -121,6 +130,7 @@ module nor_gate(a, b, out);
   pmos pmos2(out, pmos1_out, b);
 endmodule
 
+// 4 transistors
 module or_gate(a, b, out);
   input wire a, b;
   output out;
@@ -138,6 +148,7 @@ module or_gate(a, b, out);
   
 endmodule
 
+// 2 transistors
 module not_gate(a, out);
   input wire a;
   output out;
@@ -149,6 +160,7 @@ module not_gate(a, out);
   nmos nmos1(out, gnd, a);
 endmodule
 
+// 4 transistors
 module xor_gate(a, b, out);
   input wire a, b;
   output out;
@@ -165,6 +177,7 @@ module xor_gate(a, b, out);
   nmos a_nmos(out, b_res, a);
 endmodule
 
+// 4 transistors
 module eq_gate(a, b, out);
   input wire a, b;
   output out;
