@@ -1,38 +1,78 @@
-`include "primitives.v"
+module and_gate(a, b, out);
+  input wire a, b;
+  output out;
 
-module alu(a, b, control, res);
-  input [3:0] a, b; // Операнды
-  input [2:0] control; // Управляющие сигналы для выбора операции
-
-  output [3:0] res; // Результат
-
-  wire [3:0] xor_b, not_b, and_a_b, or_a_b, slt, mux_00, mux_01, mux_10, mux_11;
-  wire eq_sign, diff_sign, eq_sign_out, diff_sign_out;
-
-  x4_xor xor1(b, control[0], xor_b);
-  
-  x4_and_x4 and1(a, b, and_a_b);
-  x4_xor xor2(and_a_b, control[0], mux_00);
-
-  x4_or_x4 or1(a, b, or_a_b);
-  x4_xor xor3(or_a_b, control[0], mux_01);
-
-  x4_adder adder1(a, xor_b, control[0], mux_10);
-
-  to_0 zero1(mux_11[3]);
-  to_0 zero2(mux_11[2]);
-  to_0 zero3(mux_11[1]);
-  x4_not not1(b, not_b);
   supply1 pwr;
-  x4_adder adder2(a, not_b, pwr, slt);
-  eq_gate eq1(a[3], b[3], eq_sign);
-  xor_gate xor4(a[3], b[3], diff_sign);
-  and_gate and2(eq_sign, slt[3], eq_sign_out);
-  and_gate and3(diff_sign, a[3], diff_sign_out);
-  or_gate or2(eq_sign_out, diff_sign_out, mux_11[0]);
+  supply0 gnd;
 
-  x4_mux mux1(mux_00, mux_01, mux_10, mux_11, control[2:1], res);
+  wire nmos1_out;
 
+  pmos pmos1(out, gnd, a);
+  pmos pmos2(out, gnd, b);
+
+  nmos nmos1(nmos1_out, pwr, a);
+  nmos nmos2(out, nmos1_out, b);
+
+endmodule
+
+module eq_gate(a, b, out);
+  input wire a, b;
+  output out;
+
+  supply1 pwr;
+  supply0 gnd;
+
+  wire b_res;
+
+  pmos b_pmos(b_res, pwr, b);
+  nmos b_nmos(b_res, gnd, b);
+
+  pmos a_pmos(out, b_res, a);
+  nmos a_nmos(out, b, a);
+endmodule
+
+module not_gate(a, out);
+  input wire a;
+  output out;
+
+  supply1 pwr;
+  supply0 gnd;
+
+  pmos pmos1(out, pwr, a);
+  nmos nmos1(out, gnd, a);
+endmodule
+
+module or_gate(a, b, out);
+  input wire a, b;
+  output out;
+
+  supply1 pwr;
+  supply0 gnd;
+
+  wire pmos1_out;
+
+  nmos nmos1(out, pwr, a);
+  nmos nmos2(out, pwr, b);
+
+  pmos pmos1(pmos1_out, gnd, b);
+  pmos pmos2(out, pmos1_out, a);
+  
+endmodule
+
+module xor_gate(a, b, out);
+  input wire a, b;
+  output out;
+
+  supply1 pwr;
+  supply0 gnd;
+
+  wire b_res;
+
+  pmos b_pmos(b_res, pwr, b);
+  nmos b_nmos(b_res, gnd, b);
+
+  pmos a_pmos(out, b, a);
+  nmos a_nmos(out, b_res, a);
 endmodule
 
 module to_0(out);
@@ -168,6 +208,41 @@ module full_adder(a, b, c_in, s, c_out);
 
 endmodule
 
+module alu(a, b, control, res);
+  input [3:0] a, b; // Операнды
+  input [2:0] control; // Управляющие сигналы для выбора операции
+
+  output [3:0] res; // Результат
+
+  wire [3:0] xor_b, not_b, and_a_b, or_a_b, slt, mux_00, mux_01, mux_10, mux_11;
+  wire eq_sign, diff_sign, eq_sign_out, diff_sign_out;
+
+  x4_xor xor1(b, control[0], xor_b);
+  
+  x4_and_x4 and1(a, b, and_a_b);
+  x4_xor xor2(and_a_b, control[0], mux_00);
+
+  x4_or_x4 or1(a, b, or_a_b);
+  x4_xor xor3(or_a_b, control[0], mux_01);
+
+  x4_adder adder1(a, xor_b, control[0], mux_10);
+
+  to_0 zero1(mux_11[3]);
+  to_0 zero2(mux_11[2]);
+  to_0 zero3(mux_11[1]);
+  x4_not not1(b, not_b);
+  supply1 pwr;
+  x4_adder adder2(a, not_b, pwr, slt);
+  eq_gate eq1(a[3], b[3], eq_sign);
+  xor_gate xor4(a[3], b[3], diff_sign);
+  and_gate and2(eq_sign, slt[3], eq_sign_out);
+  and_gate and3(diff_sign, a[3], diff_sign_out);
+  or_gate or2(eq_sign_out, diff_sign_out, mux_11[0]);
+
+  x4_mux mux1(mux_00, mux_01, mux_10, mux_11, control[2:1], res);
+
+endmodule
+
 module d_latch(clk, d, we, q);
   input clk; // Сигнал синхронизации
   input d; // Бит для записи в ячейку
@@ -187,6 +262,56 @@ module d_latch(clk, d, we, q);
   end
 endmodule
 
+module register(clk, we_data, rd_data, we);
+  input clk; // Сигнал синхронизации
+  input [3:0] we_data;
+  input we; // Необходимо ли перезаписать содержимое регистра
+
+  output [3:0] rd_data; // Данные, полученные в результате чтения из регистрa
+
+  d_latch mem0(clk, we_data[0], we, rd_data[0]);
+  d_latch mem1(clk, we_data[1], we, rd_data[1]);
+  d_latch mem2(clk, we_data[2], we, rd_data[2]);
+  d_latch mem3(clk, we_data[3], we, rd_data[3]);
+
+endmodule
+
+module demux(in, control, a, b, c, d);
+  input in;
+  input [1:0] control;
+
+  output a, b, c, d;
+
+  wire is_00, is_01, is_10, is_11;
+  wire [1:0] not_control;
+
+  not_gate not1(control[0], not_control[0]);
+  not_gate not2(control[1], not_control[1]);
+
+  and_gate check_00(not_control[0], not_control[1], is_00);
+  and_gate check_01(control[0], not_control[1], is_01);
+  and_gate check_10(not_control[0], control[1], is_10);
+  and_gate check_11(control[0], control[1], is_11);
+
+  and_gate and0(in, is_00, a);
+  and_gate and1(in, is_01, b);
+  and_gate and2(in, is_10, c);
+  and_gate and3(in, is_11, d);
+endmodule
+
+module x4_demux(in, control, a, b, c, d);
+  input [3:0] in;
+  input [1:0] control;
+
+  output [3:0] a, b, c, d;
+
+  demux bit0(in[0], control, a[0], b[0], c[0], d[0]);
+  demux bit1(in[1], control, a[1], b[1], c[1], d[1]);
+  demux bit2(in[2], control, a[2], b[2], c[2], d[2]);
+  demux bit3(in[3], control, a[3], b[3], c[3], d[3]);
+
+endmodule
+
 module register_file(clk, rd_addr, we_addr, we_data, rd_data, we);
   input clk; // Сигнал синхронизации
   input [1:0] rd_addr, we_addr; // Номера регистров для чтения и записи
@@ -194,7 +319,20 @@ module register_file(clk, rd_addr, we_addr, we_data, rd_data, we);
   input we; // Необходимо ли перезаписать содержимое регистра
 
   output [3:0] rd_data; // Данные, полученные в результате чтения из регистрового файла
-  // TODO: implementation
+
+  wire[3:0] we_data0, we_data1, we_data2, we_data3;
+  wire we0, we1, we2, we3;
+  wire[3:0] rd_data0, rd_data1, rd_data2, rd_data3;
+
+  x4_demux demux_data(we_data, we_addr, we_data0, we_data1, we_data2, we_data3);
+  demux demux_signal(we, we_addr, we0, we1, we2, we3);
+
+  register data0(clk, we_data0, rd_data0, we0);
+  register data1(clk, we_data1, rd_data1, we1);
+  register data2(clk, we_data2, rd_data2, we2);
+  register data3(clk, we_data3, rd_data3, we3);
+
+  x4_mux mux_data(rd_data0, rd_data1, rd_data2, rd_data3, rd_addr, rd_data); 
 endmodule
 
 module counter(clk, addr, control, immediate, data);
@@ -204,5 +342,19 @@ module counter(clk, addr, control, immediate, data);
   input control; // 0 - операция инкремента, 1 - операция декремента
 
   output [3:0] data; // Данные из значения под номером addr, подающиеся на выход
-  // TODO: implementation
+
+  wire not_clk;
+  wire [3:0] tmp, sum, xor_immediate; 
+
+  supply1 one;
+
+  not_gate not0(clk, not_clk);
+
+  register_file mem0(not_clk, addr, addr, data, tmp, one);
+
+  x4_xor xor0(immediate, control, xor_immediate);
+  x4_adder adder0(tmp, xor_immediate, control, sum);
+
+  register_file mem1(clk, addr, addr, sum, data, one);
+
 endmodule
